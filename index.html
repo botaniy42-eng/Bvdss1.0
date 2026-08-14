@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot VD Snap Saver</title>
+    <style>
+        body {
+            font-family: Segoe UI, sans-serif;
+            background-image: url('img/bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            padding-top: 20px;
+            margin: 0;
+            height: 100vh;
+        }
+        .chat-container { 
+            width: 400px; 
+            height: 600px; 
+            background-image: url('img/background.png');
+            background-size: cover;
+            background-position: center;
+            display: flex; 
+            flex-direction: column; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            position: relative;
+        }
+        
+        .chat-header { 
+            background-color: #6a0dad; 
+            color: white; 
+            padding: 8px 15px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            font-weight: bold; 
+            border-top-left-radius: 8px; 
+            border-top-right-radius: 8px; 
+            position: relative;
+        }
+        .header-title {
+            flex: 1;
+            font-size: 15px;
+        }
+        .profile-pic {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* থ্রি-ডট মেনু এর স্টাইল */
+        .menu-container {
+            position: relative;
+        }
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 8px;
+            outline: none;
+        }
+
+        /* ড্রপডাউন মেনু */
+        .dropdown-menu {
+            display: none;
+            position: fixed;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 8px;
+            min-width: 170px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            cursor: move;
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        .dropdown-menu a {
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            display: block;
+            font-size: 13px;
+            font-weight: normal;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.2s;
+        }
+        .dropdown-menu a:last-child {
+            border-bottom: none;
+        }
+        .dropdown-menu a:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .chat-history { 
+            flex: 1; 
+            padding: 15px; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+        }
+        .message { 
+            max-width: 75%; 
+            padding: 10px 15px; 
+            border-radius: 18px; 
+            font-size: 14px; 
+            line-height: 1.4; 
+            word-wrap: break-word; 
+        }
+        .bot-message { 
+            background: rgba(0, 0, 0, 0.4); 
+            backdrop-filter: blur(5px);
+            color: white; 
+            align-self: flex-start; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .user-message { background-color: #6a0dad; color: white; align-self: flex-end; }
+        .input-area { padding: 15px; border-top: 1px solid rgba(221, 221, 221, 0.3); display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        button { padding: 10px 20px; background-color: #6a0dad; color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        
+        .media-box { 
+            background: transparent; 
+            border: none; 
+            border-radius: 8px; 
+            padding: 5px 0 0 0; 
+            margin-top: 5px; 
+            text-align: center; 
+        }
+        video { width: 100%; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <img src="img/profile.png" alt="Profile" class="profile-pic">
+        <span class="header-title"><i>Bot VD Snap Saver</i></span>
+        
+        <div class="menu-container">
+            <button class="menu-btn" id="menuBtn" onclick="toggleMenu(event)">&#8942;</button>
+            
+            <div class="dropdown-menu" id="dropdownMenu">
+                <!-- Profile সবার উপরে দেওয়া হলো -->
+                <a href="cat/profile.html" target="_blank">Profile</a>
+                <a href="cat/bot.html" target="_blank">Bot Page</a>
+                <a href="cat/ai editor.html" target="_blank">AI Editor</a>
+                <a href="cat/ai make.html" target="_blank">AI Make</a>
+                <a href="cat/main.html" target="_blank">Main Page</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-history" id="chatHistory">
+        <!-- Chat history -->
+    </div>
+    <div class="input-area">
+        <input type="text" id="urlInput" placeholder="Type the link here...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    const menu = document.getElementById('dropdownMenu');
+    const menuBtn = document.getElementById('menuBtn');
+    let isDragging = false;
+    let offsetX = 0, offsetY = 0;
+
+    function toggleMenu(event) {
+        event.stopPropagation();
+        if (menu.classList.contains('show')) {
+            menu.classList.remove('show');
+        } else {
+            const rect = menuBtn.getBoundingClientRect();
+            menu.style.top = (rect.bottom + 5) + 'px';
+            menu.style.left = (rect.right - 170) + 'px';
+            menu.classList.add('show');
+        }
+    }
+
+    // ড্রাগ অ্যান্ড ড্রপ লজিক
+    function startDrag(e) {
+        if (e.target.tagName === 'A') return;
+        isDragging = true;
+        
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        const rect = menu.getBoundingClientRect();
+        offsetX = clientX - rect.left;
+        offsetY = clientY - rect.top;
+    }
+
+    function moveDrag(e) {
+        if (!isDragging) return;
+        
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        menu.style.left = (clientX - offsetX) + 'px';
+        menu.style.top = (clientY - offsetY) + 'px';
+    }
+
+    function stopDrag() {
+        isDragging = false;
+    }
+
+    menu.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', moveDrag);
+    document.addEventListener('mouseup', stopDrag);
+
+    menu.addEventListener('touchstart', startDrag, {passive: true});
+    document.addEventListener('touchmove', moveDrag, {passive: true});
+    document.addEventListener('touchend', stopDrag);
+
+    window.onclick = function(event) {
+        if (!menu.contains(event.target) && event.target !== menuBtn) {
+            menu.classList.remove('show');
+        }
+    };
+
+    function sendMessage() {
+        const input = document.getElementById('urlInput');
+        const url = input.value.trim();
+        const chatHistory = document.getElementById('chatHistory');
+
+        if (!url) return;
+
+        const userMsg = document.createElement('div');
+        userMsg.className = 'message user-message';
+        userMsg.innerText = url;
+        chatHistory.appendChild(userMsg);
+
+        input.value = '';
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        const botLoading = document.createElement('div');
+        botLoading.className = 'message bot-message';
+        botLoading.innerText = "Processing the link...";
+        chatHistory.appendChild(botLoading);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        setTimeout(() => {
+            chatHistory.removeChild(botLoading);
+
+            const api = `https://arafatas.vercel.app/download/arafatdl?url=${encodeURIComponent(url)}`;
+            
+            const botResponse = document.createElement('div');
+            botResponse.className = 'message bot-message';
+            botResponse.innerHTML = `
+                Video is ready!
+                <div class="media-box">
+                    <video controls src="${api}"></video>
+                </div>
+            `;
+            chatHistory.appendChild(botResponse);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }, 1500);
+    }
+</script>
+
+</body>
+</html>
