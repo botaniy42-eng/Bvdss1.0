@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Game zone</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body, html {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background-color: #0d0b14;
+    touch-action: pan-y;
+    overscroll-behavior: none;
+  }
+
+  /* Transparent Left Arrow Button (Moved slightly higher) */
+  .back-btn {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    z-index: 20;
+    background: transparent;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    font-size: 34px;
+    text-decoration: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0.85;
+  }
+
+  .back-btn:hover {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+
+  /* Main background with reduced blur */
+  .bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../img/ai roter.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    filter: blur(8px);
+    transform: scale(1.05);
+    transition: background-image 0.4s ease-out;
+    z-index: 1;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(13, 11, 20, 0.65);
+    z-index: 2;
+  }
+
+  .slider-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    perspective: 1000px;
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+
+  .card-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card {
+    width: 280px;
+    height: 200px;
+    padding: 8px;
+    background: rgba(216, 180, 254, 0.12); 
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    user-select: none;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                opacity 0.4s ease,
+                background 0.4s ease,
+                border-color 0.4s ease;
+    will-change: transform, opacity;
+  }
+
+  .inner-box {
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .inner-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  /* 3D positioning styles */
+  .card.prev {
+    transform: translateX(-220px) scale(0.78) rotateY(12deg);
+    opacity: 0.6;
+    z-index: 3;
+    cursor: pointer;
+  }
+
+  .card.active {
+    transform: translateX(0) scale(1.05) rotateY(0deg);
+    opacity: 1;
+    z-index: 5;
+    background: rgba(216, 180, 254, 0.25);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 15px 35px rgba(168, 85, 247, 0.35);
+    cursor: pointer;
+  }
+
+  .card.active .inner-box {
+    background: rgba(0, 0, 0, 0.55);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .card.next {
+    transform: translateX(220px) scale(0.78) rotateY(-12deg);
+    opacity: 0.6;
+    z-index: 3;
+    cursor: pointer;
+  }
+
+  .card.disabled {
+    cursor: default;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Back arrow button (Linked to index.html) -->
+  <a href="../index.html" target="_blank" class="back-btn" title="Back">&#11013;</a>
+
+  <div class="bg" id="bg"></div>
+  <div class="overlay"></div>
+
+  <div class="slider-container" id="slider">
+    <div class="card-wrapper" id="cardWrapper">
+
+      <!-- Box 1 -->
+      <a href="minecraft.html" target="_blank" class="card active" data-bg="../img/bgr 1.png">
+        <div class="inner-box">
+          <img src="../img/bgr 1.png" alt="Card 1">
+        </div>
+      </a>
+
+      <!-- Box 2 -->
+      <a href="work.html" target="_blank" class="card" data-bg="../img/bgr 2.png">
+        <div class="inner-box">
+          <img src="../img/bgr 2.png" alt="Card 2">
+        </div>
+      </a>
+
+      <!-- Box 3 -->
+      <a href="work.html" target="_blank" class="card" data-bg="../img/bgr 3.png">
+        <div class="inner-box">
+          <img src="../img/bgr 3.png" alt="Card 3">
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <script>
+    const cards = Array.from(document.querySelectorAll('.card'));
+    const bg = document.getElementById('bg');
+    let currentIndex = 0;
+
+    function updateCardPositions() {
+      const total = cards.length;
+
+      cards.forEach((card, index) => {
+        const hasLink = card.hasAttribute('href');
+        card.className = hasLink ? 'card' : 'card disabled';
+
+        const prevIndex = (currentIndex - 1 + total) % total;
+        const nextIndex = (currentIndex + 1) % total;
+
+        if (index === currentIndex) {
+          card.classList.add('active');
+          const bgImg = card.getAttribute('data-bg');
+          if (bgImg) bg.style.backgroundImage = `url('${bgImg}')`;
+        } else if (index === prevIndex) {
+          card.classList.add('prev');
+        } else if (index === nextIndex) {
+          card.classList.add('next');
+        }
+      });
+    }
+
+    cards.forEach((card, index) => {
+      card.addEventListener('click', (e) => {
+        if (index !== currentIndex) {
+          e.preventDefault();
+          currentIndex = index;
+          updateCardPositions();
+        } else {
+          const href = card.getAttribute('href');
+          if (href) {
+            e.preventDefault();
+            window.open(href, '_blank');
+          } else {
+            e.preventDefault();
+          }
+        }
+      });
+    });
+
+    function moveNext() {
+      currentIndex = (currentIndex + 1) % cards.length;
+      updateCardPositions();
+    }
+
+    function movePrev() {
+      currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+      updateCardPositions();
+    }
+
+    /* Touch handling to prevent screen shaking */
+    let startX = 0;
+    let startY = 0;
+    const slider = document.getElementById('slider');
+
+    slider.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    slider.addEventListener('touchend', (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      
+      const diffX = startX - endX;
+      const diffY = startY - endY;
+
+      // Ignore vertical movement to avoid accidental swipe triggering
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30) {
+        if (diffX > 0) {
+          moveNext();
+        } else {
+          movePrev();
+        }
+      }
+    }, { passive: true });
+
+    updateCardPositions();
+  </script>
+
+</body>
+</html>
